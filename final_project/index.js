@@ -22,12 +22,12 @@ app.use("/customer/auth/*", function auth(req,res,next){
                 next();
             }
             else {
-                return res.send(403).json({message: "User not authenticated" });
+                return res.status(403).json({message: "User not authenticated" });
             }
         })
     }
     else {
-        return res.send.json({message: "User not logged in"});
+        return res.json({message: "User not logged in"});
     }
 });
  

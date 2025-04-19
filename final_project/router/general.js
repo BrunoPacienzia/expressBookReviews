@@ -12,74 +12,126 @@ public_users.post("/register", (req,res) => {
   const password = req.body.password;
   if(username && password){
     if(!doesExist(username)){            
-    users.push({username, password});
-    res.send("The user" + (' ') + (username) + " Has been added!");
+    users.push({"username": username, "password": password});
+    return res.status(200).json({message: "The user" + (' ') + (username) + " Has been added!"});
     }
     else{
-        res.send("User already exists");
+        return res.status(404).json({message: "User already exists!"});
     }
 
   }
   else{
-    res.send("Please provide an username and a password");
+    return res.status(404).json({message: "Please provide a password and an username"});
   }
 });
 
+const getBooksWithPromise = () => {
+    return new Promise((resolve, reject) => {
+      try {
+        const data = books;
+        resolve(data);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  };
+
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
+public_users.get('/', function (req, res) {
   //Write your code here
-  res.send(JSON.stringify(books, null, 4));
+   getBooksWithPromise().then((data) => res.send(JSON.stringify(data, null, 4)), 
+   (err) => res.send(JSON.stringify(err)))
 });
+
+const getBooksByIsbnWithPromise = (isbn) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const data = books[isbn];
+        resolve(data);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  };
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
   const isbn = req.params.isbn;
-  res.send(books[isbn]);
+  getBooksByIsbnWithPromise(isbn).then((data) => res.send(data), 
+  (err) => res.send(JSON.stringify(err)))
  });
+
+ const getBooksByAuthorWithPromise = (author) => {
+    return new Promise((resolve, reject) => {
+      try {
+        let data = null;
+
+        let keys = Object.keys(books); 
+      
+        for(let key of keys){
+          if(books[key].author === author){
+              data = books[key];
+              break;
+          }
+        }
+        resolve(data);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  };
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   //Write your code here
   const author = req.params.author;
-  let foundBook = null;
 
-  let keys = Object.keys(books); 
-
-  for(let key of keys){
-    if(books[key].author === author){
-        foundBook = books[key];
-        break;
+  getBooksByAuthorWithPromise(author).then((data) => {
+    if(data){
+        return res.send(data);
     }
-  }
-  if(foundBook){
-    res.send(foundBook);
-  }
-  else {
-    res.status(404).json({message: "Book not found"});
-  }
+    else{
+        return res.status(404).json({message: "Book not found"});
+    }
+  }, 
+  (err) => res.send(JSON.stringify(err)));
 
 });
+
+const getBooksByTitleWithPromise = (title) => {
+    return new Promise((resolve, reject) => {
+      try {
+        let data = null;
+
+        let keys = Object.keys(books); 
+      
+        for(let key of keys){
+          if(books[key].title === title){
+              data = books[key];
+              break;
+          }
+        }
+        resolve(data);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  };
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
   //Write your code here
   const title = req.params.title;
-  let foundBook = null;
 
-  let keys = Object.keys(books); 
-
-  for(let key of keys){
-    if(books[key].title === title){
-        foundBook = books[key];
-        break;
+  getBooksByTitleWithPromise(title).then((data) => {
+    if(data){
+        return res.send(data);
     }
-  }
-  if(foundBook){
-    res.send(foundBook);
-  }
-  else {
-    res.status(404).json({message: "Book not found"});
-  }
+    else{
+        return res.status(404).json({message: "Book not found"});
+    }
+  }, 
+  (err) => res.send(JSON.stringify(err)));
 
 });
 
